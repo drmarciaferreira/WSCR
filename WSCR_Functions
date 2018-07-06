@@ -1,0 +1,110 @@
+# *******************
+# *******************
+#
+# Water Supply Conditions Report
+# 2018-07-06 - Marcia Ferreira
+# v0.1 - Query CDEC (http://cdec.water.ca.gov) for storage and precipitation 
+#
+# *******************
+# *******************
+
+# ***********************
+# ***********************
+# Functions to query CDEC
+# ***********************
+# ***********************
+
+# ***********************
+# Transform date into CDEC date
+# ***********************
+
+convCDECdate <- function(date)
+{
+	if (date =="now") {date = as.character(format(Sys.Date(),"%Y%m%d"))}
+	year <- substr(date,start=1,stop=4)
+	month <- substr(date, start=5, stop=6)
+	day <- substr(date, start=7, stop=8)
+	date <- c(month,"%2F",day,"%2F",year)	
+	date <- paste(date, sep="", collapse="")	
+	return(date)
+}
+
+# ***********************
+# Used for reservoirs on CDEC
+# ***********************
+
+askCDECSto <- function(startdate,enddate, station, sensor=15)
+{
+	startdate <- convCDECdate(startdate)
+	enddate <- convCDECdate(enddate)
+	url1 <- c("http://cdec.water.ca.gov/cgi-progs/queryCSV?station_id=",station,"&sensor_num=",sensor,"&dur_code=D&start_date=",startdate,"&end_date=",enddate,"&data_wish=View+CSV+Data")
+	url2 <- paste(url1,sep="",collapse="")
+	CDEC <- read.csv(url2,skip=1,stringsAsFactors = FALSE)
+	colnames(CDEC) <- c("Date","Empty","Storage")
+	CDEC$Empty <- NULL
+	a <- 0
+	for (i in 1:length(CDEC$Date))
+	{
+	a[i] <- paste(c(substr(CDEC$Date[i],start=1,stop=4),substr(CDEC$Date[i],start=5,stop=6),substr(CDEC$Date[i],start=7,stop=8)),collapse="-")
+	}
+	CDEC$Date <- a
+	CDEC$Storage <- as.numeric(CDEC$Storage)	
+	return(CDEC)
+}
+
+# ***********************
+# Used for precipitation stations on CDEC
+# ***********************
+
+askCDECPrecip <- function(startdate, enddate, station, sensor=2)
+{
+	startdate <- convCDECdate(startdate)
+	enddate <- convCDECdate(enddate)
+	url1 <- c("http://cdec.water.ca.gov/cgi-progs/queryCSV?station_id=",station,"&sensor_num=",sensor,"&dur_code=D&start_date=",startdate,"&end_date=",enddate,"&data_wish=View+CSV+Data")
+	url2 <- paste(url1,sep="",collapse="")
+	CDEC <- read.csv(url2,skip=1,stringsAsFactors = FALSE)
+	colnames(CDEC) <- c("Date","Empty","Precipitation","Empty2")
+	CDEC$Empty <- NULL
+	CDEC$Empty2 <- NULL
+	a <- 0
+	for (i in 1:length(CDEC$Date))
+	{
+		a[i] <- paste(c(substr(CDEC$Date[i],start=1,stop=4),substr(CDEC$Date[i],start=5,stop=6),substr(CDEC$Date[i],start=7,stop=8)),collapse="-")
+	}
+	CDEC$Date <- as.character(as.Date(a,origin="1970-01-01"))
+	CDEC$Precipitation <- as.numeric(CDEC$Precipitation)	
+	return(CDEC)
+}
+
+
+# ***********************
+# ***********************
+# START MAIN CODE
+# ***********************
+# ***********************
+
+# **********************
+# Modify dates for query
+# enddate can be YYYYMMDD or "now"
+# **********************
+
+startdate <- c("20180701")
+enddate <- c("now")
+
+# ***********************
+# CDEC Reservoirs Storage
+# ***********************
+
+ORO <- askCDECSto(startdate, enddate, "ORO")
+CAS <- askCDECSto(startdate, enddate, "CAS")
+SHA <- askCDECSto(startdate, enddate, "SHA")
+
+
+# *******************
+# CDEC Precipitation
+# *******************
+
+SI8 <- askCDECPrecip(startdate, enddate,"8SI")
+SI5 <- askCDECPrecip(startdate, enddate,"5SI")
+
+
