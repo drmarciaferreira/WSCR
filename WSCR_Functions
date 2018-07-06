@@ -77,34 +77,6 @@ askCDECPrecip <- function(startdate, enddate, station, sensor=2)
 }
 
 
-# ***********************
-# ***********************
-# START MAIN CODE
-# ***********************
-# ***********************
 
-# **********************
-# Modify dates for query
-# enddate can be YYYYMMDD or "now"
-# **********************
-
-startdate <- c("20180701")
-enddate <- c("now")
-
-# ***********************
-# CDEC Reservoirs Storage
-# ***********************
-
-ORO <- askCDECSto(startdate, enddate, "ORO")
-CAS <- askCDECSto(startdate, enddate, "CAS")
-SHA <- askCDECSto(startdate, enddate, "SHA")
-
-
-# *******************
-# CDEC Precipitation
-# *******************
-
-SI8 <- askCDECPrecip(startdate, enddate,"8SI")
-SI5 <- askCDECPrecip(startdate, enddate,"5SI")
 
 
